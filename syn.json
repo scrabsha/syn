@@ -731,6 +731,11 @@
             "syn": "ExprForLoop"
           }
         ],
+        "Fragment": [
+          {
+            "syn": "ExprFragment"
+          }
+        ],
         "Group": [
           {
             "syn": "ExprGroup"
@@ -1283,6 +1288,41 @@
         "body": {
           "syn": "Block"
         }
+      }
+    },
+    {
+      "ident": "ExprFragment",
+      "features": {
+        "any": [
+          "derive",
+          "full"
+        ]
+      },
+      "fields": {
+        "attrs": {
+          "vec": {
+            "syn": "Attribute"
+          }
+        },
+        "kind": {
+          "syn": "ExprFragmentKind"
+        }
+      }
+    },
+    {
+      "ident": "ExprFragmentKind",
+      "features": {
+        "any": [
+          "derive",
+          "full"
+        ]
+      },
+      "variants": {
+        "Expr": [
+          {
+            "syn": "FragmentExpr"
+          }
+        ]
       }
     },
     {
@@ -2340,6 +2380,20 @@
         },
         "semi_token": {
           "token": "Semi"
+        }
+      }
+    },
+    {
+      "ident": "FragmentExpr",
+      "features": {
+        "any": []
+      },
+      "fields": {
+        "span": {
+          "proc_macro2": "Span"
+        },
+        "payload": {
+          "std": "usize"
         }
       }
     },

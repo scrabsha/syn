@@ -16,7 +16,7 @@ use syn_codegen as types;
 const SYN_CRATE_ROOT: &str = "src/lib.rs";
 const TOKEN_SRC: &str = "src/token.rs";
 const IGNORED_MODS: &[&str] = &["fold", "visit", "visit_mut"];
-const EXTRA_TYPES: &[&str] = &["Lifetime"];
+const EXTRA_TYPES: &[&str] = &["Lifetime", "FragmentExpr"];
 
 struct Lookup {
     items: BTreeMap<Ident, AstItem>,

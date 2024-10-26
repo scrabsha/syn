@@ -263,6 +263,7 @@ impl Clone for crate::Expr {
             crate::Expr::Field(v0) => crate::Expr::Field(v0.clone()),
             #[cfg(feature = "full")]
             crate::Expr::ForLoop(v0) => crate::Expr::ForLoop(v0.clone()),
+            crate::Expr::Fragment(v0) => crate::Expr::Fragment(v0.clone()),
             crate::Expr::Group(v0) => crate::Expr::Group(v0.clone()),
             #[cfg(feature = "full")]
             crate::Expr::If(v0) => crate::Expr::If(v0.clone()),
@@ -479,6 +480,27 @@ impl Clone for crate::ExprForLoop {
             in_token: self.in_token.clone(),
             expr: self.expr.clone(),
             body: self.body.clone(),
+        }
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+impl Clone for crate::ExprFragment {
+    fn clone(&self) -> Self {
+        crate::ExprFragment {
+            attrs: self.attrs.clone(),
+            kind: self.kind.clone(),
+        }
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+impl Clone for crate::ExprFragmentKind {
+    fn clone(&self) -> Self {
+        match self {
+            crate::ExprFragmentKind::Expr(v0) => {
+                crate::ExprFragmentKind::Expr(v0.clone())
+            }
         }
     }
 }
@@ -940,6 +962,15 @@ impl Clone for crate::ForeignItemType {
             ident: self.ident.clone(),
             generics: self.generics.clone(),
             semi_token: self.semi_token.clone(),
+        }
+    }
+}
+#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+impl Clone for crate::FragmentExpr {
+    fn clone(&self) -> Self {
+        crate::FragmentExpr {
+            span: self.span.clone(),
+            payload: self.payload.clone(),
         }
     }
 }

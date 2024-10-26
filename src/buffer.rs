@@ -5,6 +5,7 @@
 // Syn, and caution should be used when editing it. The public-facing interface
 // is 100% safe but the implementation is fragile internally.
 
+use crate::fragment::{Fragment, FragmentExpr};
 use crate::Lifetime;
 use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
@@ -20,6 +21,7 @@ enum Entry {
     Ident(Ident),
     Punct(Punct),
     Literal(Literal),
+    Fragment(Fragment),
     // End entries contain the offset (negative) to the start of the buffer, and
     // offset (negative) to the matching Group entry.
     End(isize, isize),
@@ -38,7 +40,14 @@ impl TokenBuffer {
     fn recursive_new(entries: &mut Vec<Entry>, stream: TokenStream) {
         for tt in stream {
             match tt {
-                TokenTree::Ident(ident) => entries.push(Entry::Ident(ident)),
+                TokenTree::Ident(ident) => {
+                    let entry = match Fragment::try_from(ident) {
+                        Ok(fragment) => Entry::Fragment(fragment),
+                        Err(ident) => Entry::Ident(ident),
+                    };
+
+                    entries.push(entry);
+                }
                 TokenTree::Punct(punct) => entries.push(Entry::Punct(punct)),
                 TokenTree::Literal(literal) => entries.push(Entry::Literal(literal)),
                 TokenTree::Group(group) => {
@@ -279,6 +288,19 @@ impl<'a> Cursor<'a> {
         }
     }
 
+    /// If a cursor is pointing at an expression fragment, returns it along with
+    /// cursor pointing at the next `TokenTree`.
+    pub fn expr_fragment(mut self) -> Option<(FragmentExpr, Cursor<'a>)> {
+        self.ignore_none();
+        let frag = match self.entry() {
+            Entry::Fragment(fragment) => fragment.as_expr().cloned(),
+            _ => None,
+        }?;
+
+        let rest = unsafe { Cursor::create(self.ptr.add(1), self.scope) };
+        Some((frag, rest))
+    }
+
     /// Copies all remaining tokens visible from this cursor into a
     /// `TokenStream`.
     pub fn token_stream(self) -> TokenStream {
@@ -304,6 +326,7 @@ impl<'a> Cursor<'a> {
             Entry::Literal(literal) => (literal.clone().into(), 1),
             Entry::Ident(ident) => (ident.clone().into(), 1),
             Entry::Punct(punct) => (punct.clone().into(), 1),
+            Entry::Fragment(fragment) => (fragment.clone().into(), 1),
             Entry::End(..) => return None,
         };
 
@@ -319,6 +342,7 @@ impl<'a> Cursor<'a> {
             Entry::Literal(literal) => literal.span(),
             Entry::Ident(ident) => ident.span(),
             Entry::Punct(punct) => punct.span(),
+            Entry::Fragment(fragment) => fragment.span(),
             Entry::End(_, offset) => {
                 self.ptr = unsafe { self.ptr.offset(*offset) };
                 if let Entry::Group(group, _) = self.entry() {

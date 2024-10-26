@@ -295,6 +295,9 @@ impl PartialEq for crate::Expr {
             (crate::Expr::ForLoop(self0), crate::Expr::ForLoop(other0)) => {
                 self0 == other0
             }
+            (crate::Expr::Fragment(self0), crate::Expr::Fragment(other0)) => {
+                self0 == other0
+            }
             (crate::Expr::Group(self0), crate::Expr::Group(other0)) => self0 == other0,
             #[cfg(feature = "full")]
             (crate::Expr::If(self0), crate::Expr::If(other0)) => self0 == other0,
@@ -496,6 +499,31 @@ impl PartialEq for crate::ExprForLoop {
     fn eq(&self, other: &Self) -> bool {
         self.attrs == other.attrs && self.label == other.label && self.pat == other.pat
             && self.expr == other.expr && self.body == other.body
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Eq for crate::ExprFragment {}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl PartialEq for crate::ExprFragment {
+    fn eq(&self, other: &Self) -> bool {
+        self.attrs == other.attrs && self.kind == other.kind
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Eq for crate::ExprFragmentKind {}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl PartialEq for crate::ExprFragmentKind {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (
+                crate::ExprFragmentKind::Expr(self0),
+                crate::ExprFragmentKind::Expr(other0),
+            ) => self0 == other0,
+        }
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
@@ -940,6 +968,14 @@ impl PartialEq for crate::ForeignItemType {
     fn eq(&self, other: &Self) -> bool {
         self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
             && self.generics == other.generics
+    }
+}
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Eq for crate::FragmentExpr {}
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl PartialEq for crate::FragmentExpr {
+    fn eq(&self, other: &Self) -> bool {
+        self.payload == other.payload
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]

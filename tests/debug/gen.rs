@@ -680,6 +680,14 @@ impl Debug for Lite<syn::Expr> {
                 formatter.field("body", Lite(&_val.body));
                 formatter.finish()
             }
+            syn::Expr::Fragment(_val) => {
+                let mut formatter = formatter.debug_struct("Expr::Fragment");
+                if !_val.attrs.is_empty() {
+                    formatter.field("attrs", Lite(&_val.attrs));
+                }
+                formatter.field("kind", Lite(&_val.kind));
+                formatter.finish()
+            }
             syn::Expr::Group(_val) => {
                 let mut formatter = formatter.debug_struct("Expr::Group");
                 if !_val.attrs.is_empty() {
@@ -1318,6 +1326,29 @@ impl Debug for Lite<syn::ExprForLoop> {
         formatter.field("expr", Lite(&self.value.expr));
         formatter.field("body", Lite(&self.value.body));
         formatter.finish()
+    }
+}
+impl Debug for Lite<syn::ExprFragment> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let mut formatter = formatter.debug_struct("ExprFragment");
+        if !self.value.attrs.is_empty() {
+            formatter.field("attrs", Lite(&self.value.attrs));
+        }
+        formatter.field("kind", Lite(&self.value.kind));
+        formatter.finish()
+    }
+}
+impl Debug for Lite<syn::ExprFragmentKind> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        match &self.value {
+            syn::ExprFragmentKind::Expr(_val) => {
+                formatter.write_str("ExprFragmentKind::Expr")?;
+                formatter.write_str("(")?;
+                Debug::fmt(Lite(_val), formatter)?;
+                formatter.write_str(")")?;
+                Ok(())
+            }
+        }
     }
 }
 impl Debug for Lite<syn::ExprGroup> {
@@ -2012,6 +2043,13 @@ impl Debug for Lite<syn::ForeignItemType> {
         formatter.field("vis", Lite(&self.value.vis));
         formatter.field("ident", Lite(&self.value.ident));
         formatter.field("generics", Lite(&self.value.generics));
+        formatter.finish()
+    }
+}
+impl Debug for Lite<syn::FragmentExpr> {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let mut formatter = formatter.debug_struct("FragmentExpr");
+        formatter.field("payload", Lite(&self.value.payload));
         formatter.finish()
     }
 }
