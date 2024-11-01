@@ -323,6 +323,8 @@ pub mod token;
 #[cfg(any(feature = "full", feature = "derive"))]
 mod attr;
 #[cfg(any(feature = "full", feature = "derive"))]
+mod fragment;
+#[cfg(any(feature = "full", feature = "derive"))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "full", feature = "derive"))))]
 pub use crate::attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue};
 
@@ -374,10 +376,14 @@ pub use crate::expr::{
 #[cfg_attr(docsrs, doc(cfg(feature = "full")))]
 pub use crate::expr::{
     ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure, ExprConst,
-    ExprContinue, ExprForLoop, ExprGroup, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
-    ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprTuple, ExprUnsafe,
-    ExprWhile, ExprYield,
+    ExprContinue, ExprForLoop, ExprFragment, ExprFragmentKind, ExprGroup, ExprIf, ExprInfer,
+    ExprLet, ExprLoop, ExprMatch, ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry,
+    ExprTryBlock, ExprTuple, ExprUnsafe, ExprWhile, ExprYield,
 };
+
+#[cfg(any(feature = "full", feature = "derive"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "full")))]
+pub use crate::fragment::{Fragment, FragmentExpr};
 
 #[cfg(feature = "parsing")]
 #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]

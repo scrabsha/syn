@@ -95,6 +95,7 @@ use self::private::WithSpan;
 use crate::buffer::Cursor;
 #[cfg(feature = "parsing")]
 use crate::error::Result;
+use crate::fragment::FragmentExpr;
 #[cfg(feature = "parsing")]
 use crate::lifetime::Lifetime;
 #[cfg(feature = "parsing")]
@@ -183,6 +184,12 @@ impl_low_level_token!("literal" Literal literal);
 impl_low_level_token!("token" TokenTree token_tree);
 impl_low_level_token!("group token" proc_macro2::Group any_group);
 impl_low_level_token!("lifetime" Lifetime lifetime);
+impl_low_level_token!("expression fragment" FragmentExpr expr_fragment);
+
+#[allow(non_snake_case)]
+pub fn FragmentExpr<S: IntoSpans<Span>>(span: S) -> FragmentExpr {
+    todo!("wtf is this")
+}
 
 #[cfg(feature = "parsing")]
 impl<T: CustomToken> private::Sealed for T {}

@@ -206,6 +206,16 @@ pub trait Visit<'ast> {
     }
     #[cfg(any(feature = "derive", feature = "full"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+    fn visit_expr_fragment(&mut self, i: &'ast crate::ExprFragment) {
+        visit_expr_fragment(self, i);
+    }
+    #[cfg(any(feature = "derive", feature = "full"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+    fn visit_expr_fragment_kind(&mut self, i: &'ast crate::ExprFragmentKind) {
+        visit_expr_fragment_kind(self, i);
+    }
+    #[cfg(any(feature = "derive", feature = "full"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
     fn visit_expr_group(&mut self, i: &'ast crate::ExprGroup) {
         visit_expr_group(self, i);
     }
@@ -398,6 +408,9 @@ pub trait Visit<'ast> {
     #[cfg_attr(docsrs, doc(cfg(feature = "full")))]
     fn visit_foreign_item_type(&mut self, i: &'ast crate::ForeignItemType) {
         visit_foreign_item_type(self, i);
+    }
+    fn visit_fragment_expr(&mut self, i: &'ast crate::FragmentExpr) {
+        visit_fragment_expr(self, i);
     }
     #[cfg(any(feature = "derive", feature = "full"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
@@ -1351,6 +1364,9 @@ where
         crate::Expr::ForLoop(_binding_0) => {
             full!(v.visit_expr_for_loop(_binding_0));
         }
+        crate::Expr::Fragment(_binding_0) => {
+            v.visit_expr_fragment(_binding_0);
+        }
         crate::Expr::Group(_binding_0) => {
             v.visit_expr_group(_binding_0);
         }
@@ -1639,6 +1655,29 @@ where
     skip!(node.in_token);
     v.visit_expr(&*node.expr);
     v.visit_block(&node.body);
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+pub fn visit_expr_fragment<'ast, V>(v: &mut V, node: &'ast crate::ExprFragment)
+where
+    V: Visit<'ast> + ?Sized,
+{
+    for it in &node.attrs {
+        v.visit_attribute(it);
+    }
+    v.visit_expr_fragment_kind(&node.kind);
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+pub fn visit_expr_fragment_kind<'ast, V>(v: &mut V, node: &'ast crate::ExprFragmentKind)
+where
+    V: Visit<'ast> + ?Sized,
+{
+    match node {
+        crate::ExprFragmentKind::Expr(_binding_0) => {
+            v.visit_fragment_expr(_binding_0);
+        }
+    }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
@@ -2200,6 +2239,13 @@ where
     v.visit_ident(&node.ident);
     v.visit_generics(&node.generics);
     skip!(node.semi_token);
+}
+pub fn visit_fragment_expr<'ast, V>(v: &mut V, node: &'ast crate::FragmentExpr)
+where
+    V: Visit<'ast> + ?Sized,
+{
+    v.visit_span(&node.span);
+    skip!(node.payload);
 }
 #[cfg(any(feature = "derive", feature = "full"))]
 #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]

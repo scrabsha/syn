@@ -1,6 +1,7 @@
 use crate::attr::Attribute;
 #[cfg(all(feature = "parsing", feature = "full"))]
 use crate::error::Result;
+use crate::fragment::FragmentExpr;
 #[cfg(feature = "full")]
 use crate::generics::BoundLifetimes;
 use crate::ident::Ident;
@@ -9,6 +10,7 @@ use crate::lifetime::Lifetime;
 use crate::lit::Lit;
 use crate::mac::Macro;
 use crate::op::{BinOp, UnOp};
+use crate::parse::Parse;
 #[cfg(all(feature = "parsing", feature = "full"))]
 use crate::parse::ParseStream;
 #[cfg(feature = "full")]
@@ -151,6 +153,9 @@ ast_enum_of_structs! {
 
         /// A for loop: `for pat in expr { ... }`.
         ForLoop(ExprForLoop),
+
+        /// A fragment that is compatible with an expression: `$expr`, `$path`, `$literal`.
+        Fragment(ExprFragment),
 
         /// An expression contained within invisible delimiters.
         ///
@@ -423,6 +428,25 @@ ast_struct! {
         pub in_token: Token![in],
         pub expr: Box<Expr>,
         pub body: Block,
+    }
+}
+
+ast_struct! {
+    /// A fragment that is compatible with an expression: `$expr`, `$path`,
+    /// `$literal`.
+    #[cfg_attr(docsrs, doc(cfg(feature = "full")))]
+    pub struct ExprFragment {
+        pub attrs: Vec<Attribute>,
+        pub kind: ExprFragmentKind,
+    }
+}
+
+ast_enum! {
+    /// A fragment that is compatible with an expression: `$expr`, `$path`,
+    /// `$literal`.
+    #[cfg_attr(docsrs, doc(cfg(feature = "full")))]
+    pub enum ExprFragmentKind {
+        Expr(FragmentExpr),
     }
 }
 
@@ -906,6 +930,7 @@ impl Expr {
             | Expr::Continue(ExprContinue { attrs, .. })
             | Expr::Field(ExprField { attrs, .. })
             | Expr::ForLoop(ExprForLoop { attrs, .. })
+            | Expr::Fragment(ExprFragment { attrs, .. })
             | Expr::Group(ExprGroup { attrs, .. })
             | Expr::If(ExprIf { attrs, .. })
             | Expr::Index(ExprIndex { attrs, .. })
@@ -1167,14 +1192,16 @@ pub(crate) mod parsing {
     use crate::punctuated::Punctuated;
     #[cfg(feature = "full")]
     use crate::stmt::Block;
-    use crate::token;
-    use crate::ty;
     #[cfg(feature = "full")]
     use crate::ty::{ReturnType, Type};
     use crate::verbatim;
+    use crate::{token, FragmentExpr};
+    use crate::{ty, Fragment};
     #[cfg(feature = "full")]
     use proc_macro2::TokenStream;
     use std::mem;
+
+    use super::{ExprFragment, ExprFragmentKind};
 
     // When we're parsing expressions which occur before blocks, like in an if
     // statement's condition, we cannot parse a struct literal.
@@ -1743,6 +1770,8 @@ pub(crate) mod parsing {
     // interactions, as they are fully contained.
     #[cfg(feature = "full")]
     fn atom_expr(input: ParseStream, allow_struct: AllowStruct) -> Result<Expr> {
+        use crate::{token::Token, FragmentExpr};
+
         if input.peek(token::Group) {
             expr_group(input, allow_struct)
         } else if input.peek(Lit) {
@@ -1814,6 +1843,8 @@ pub(crate) mod parsing {
             input.parse().map(Expr::Infer)
         } else if input.peek(Lifetime) {
             atom_labeled(input)
+        } else if input.peek(crate::token::FragmentExpr) {
+            input.parse().map(Expr::Fragment)
         } else {
             Err(input.error("expected an expression"))
         }
@@ -2270,6 +2301,25 @@ pub(crate) mod parsing {
                 expr: Box::new(expr),
                 body: Block { brace_token, stmts },
             })
+        }
+    }
+
+    #[cfg(feature = "full")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
+    impl Parse for ExprFragment {
+        fn parse(input: ParseStream) -> Result<ExprFragment> {
+            Ok(ExprFragment {
+                attrs: input.call(Attribute::parse_outer)?,
+                kind: input.parse()?,
+            })
+        }
+    }
+
+    #[cfg(feature = "full")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
+    impl Parse for ExprFragmentKind {
+        fn parse(input: ParseStream) -> Result<ExprFragmentKind> {
+            Ok(ExprFragmentKind::Expr(input.parse()?))
         }
     }
 
@@ -3087,6 +3137,8 @@ pub(crate) mod printing {
     use proc_macro2::{Literal, Span, TokenStream};
     use quote::{ToTokens, TokenStreamExt};
 
+    use super::{ExprFragment, ExprFragmentKind};
+
     #[cfg(feature = "full")]
     pub(crate) fn outer_attrs_to_tokens(attrs: &[Attribute], tokens: &mut TokenStream) {
         tokens.append_all(attrs.outer());
@@ -3175,6 +3227,8 @@ pub(crate) mod printing {
             Expr::Field(e) => print_expr_field(e, tokens, fixup),
             #[cfg(feature = "full")]
             Expr::ForLoop(e) => e.to_tokens(tokens),
+            #[cfg(feature = "full")]
+            Expr::Fragment(e) => e.to_tokens(tokens),
             Expr::Group(e) => e.to_tokens(tokens),
             #[cfg(feature = "full")]
             Expr::If(e) => e.to_tokens(tokens),
@@ -3515,6 +3569,17 @@ pub(crate) mod printing {
                 inner_attrs_to_tokens(&self.attrs, tokens);
                 tokens.append_all(&self.body.stmts);
             });
+        }
+    }
+
+    #[cfg_attr(docsrs, doc(cfg(feature = "printing")))]
+    impl ToTokens for ExprFragment {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            outer_attrs_to_tokens(&self.attrs, tokens);
+
+            match &self.kind {
+                ExprFragmentKind::Expr(fragment_expr) => fragment_expr.to_tokens(tokens),
+            }
         }
     }
 

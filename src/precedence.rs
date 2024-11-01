@@ -113,6 +113,8 @@ impl Precedence {
             | Expr::Continue(_)
             | Expr::Field(_)
             | Expr::ForLoop(_)
+            // TODO: legit?
+            | Expr::Fragment(_)
             | Expr::Group(_)
             | Expr::If(_)
             | Expr::Index(_)

@@ -441,6 +441,7 @@ impl Debug for crate::Expr {
             crate::Expr::Field(v0) => v0.debug(formatter, "Field"),
             #[cfg(feature = "full")]
             crate::Expr::ForLoop(v0) => v0.debug(formatter, "ForLoop"),
+            crate::Expr::Fragment(v0) => v0.debug(formatter, "Fragment"),
             crate::Expr::Group(v0) => v0.debug(formatter, "Group"),
             #[cfg(feature = "full")]
             crate::Expr::If(v0) => v0.debug(formatter, "If"),
@@ -746,6 +747,36 @@ impl crate::ExprForLoop {
         formatter.field("expr", &self.expr);
         formatter.field("body", &self.body);
         formatter.finish()
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Debug for crate::ExprFragment {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.debug(formatter, "ExprFragment")
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+impl crate::ExprFragment {
+    fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
+        let mut formatter = formatter.debug_struct(name);
+        formatter.field("attrs", &self.attrs);
+        formatter.field("kind", &self.kind);
+        formatter.finish()
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Debug for crate::ExprFragmentKind {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("ExprFragmentKind::")?;
+        match self {
+            crate::ExprFragmentKind::Expr(v0) => {
+                let mut formatter = formatter.debug_tuple("Expr");
+                formatter.field(v0);
+                formatter.finish()
+            }
+        }
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
@@ -1408,6 +1439,15 @@ impl crate::ForeignItemType {
         formatter.field("ident", &self.ident);
         formatter.field("generics", &self.generics);
         formatter.field("semi_token", &self.semi_token);
+        formatter.finish()
+    }
+}
+#[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
+impl Debug for crate::FragmentExpr {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        let mut formatter = formatter.debug_struct("FragmentExpr");
+        formatter.field("span", &self.span);
+        formatter.field("payload", &self.payload);
         formatter.finish()
     }
 }

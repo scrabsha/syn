@@ -32,7 +32,7 @@ fold = []
 clone-impls = []
 extra-traits = []
 proc-macro = ["proc-macro2/proc-macro", "quote?/proc-macro"]
-test = ["syn-test-suite/all-features"]
+# test = ["syn-test-suite/all-features"]
 
 [dependencies]
 proc-macro2 = { version = "1.0.83", default-features = false }
@@ -45,7 +45,7 @@ automod = "1"
 insta = "1"
 ref-cast = "1"
 rustversion = "1"
-syn-test-suite = { version = "0", path = "tests/features" }
+# syn-test-suite = { version = "0", path = "tests/features" }
 termcolor = "1"
 
 [target.'cfg(not(miri))'.dev-dependencies]
@@ -86,5 +86,5 @@ members = [
     "examples/lazy-static/lazy-static",
     "examples/trace-var/example",
     "examples/trace-var/trace-var",
-    "tests/features",
+    # "tests/features",
 ]

@@ -353,6 +353,7 @@ pub(crate) mod parsing {
                 | Expr::Const(_)
                 | Expr::Continue(_)
                 | Expr::Field(_)
+                | Expr::Fragment(_)
                 | Expr::ForLoop(_)
                 | Expr::Group(_)
                 | Expr::If(_)

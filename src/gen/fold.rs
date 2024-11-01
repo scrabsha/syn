@@ -213,6 +213,19 @@ pub trait Fold {
     }
     #[cfg(any(feature = "derive", feature = "full"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+    fn fold_expr_fragment(&mut self, i: crate::ExprFragment) -> crate::ExprFragment {
+        fold_expr_fragment(self, i)
+    }
+    #[cfg(any(feature = "derive", feature = "full"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+    fn fold_expr_fragment_kind(
+        &mut self,
+        i: crate::ExprFragmentKind,
+    ) -> crate::ExprFragmentKind {
+        fold_expr_fragment_kind(self, i)
+    }
+    #[cfg(any(feature = "derive", feature = "full"))]
+    #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
     fn fold_expr_group(&mut self, i: crate::ExprGroup) -> crate::ExprGroup {
         fold_expr_group(self, i)
     }
@@ -420,6 +433,9 @@ pub trait Fold {
         i: crate::ForeignItemType,
     ) -> crate::ForeignItemType {
         fold_foreign_item_type(self, i)
+    }
+    fn fold_fragment_expr(&mut self, i: crate::FragmentExpr) -> crate::FragmentExpr {
+        fold_fragment_expr(self, i)
     }
     #[cfg(any(feature = "derive", feature = "full"))]
     #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
@@ -1355,6 +1371,9 @@ where
         crate::Expr::ForLoop(_binding_0) => {
             crate::Expr::ForLoop(full!(f.fold_expr_for_loop(_binding_0)))
         }
+        crate::Expr::Fragment(_binding_0) => {
+            crate::Expr::Fragment(f.fold_expr_fragment(_binding_0))
+        }
         crate::Expr::Group(_binding_0) => {
             crate::Expr::Group(f.fold_expr_group(_binding_0))
         }
@@ -1613,6 +1632,32 @@ where
         in_token: node.in_token,
         expr: Box::new(f.fold_expr(*node.expr)),
         body: f.fold_block(node.body),
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+pub fn fold_expr_fragment<F>(f: &mut F, node: crate::ExprFragment) -> crate::ExprFragment
+where
+    F: Fold + ?Sized,
+{
+    crate::ExprFragment {
+        attrs: f.fold_attributes(node.attrs),
+        kind: f.fold_expr_fragment_kind(node.kind),
+    }
+}
+#[cfg(any(feature = "derive", feature = "full"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
+pub fn fold_expr_fragment_kind<F>(
+    f: &mut F,
+    node: crate::ExprFragmentKind,
+) -> crate::ExprFragmentKind
+where
+    F: Fold + ?Sized,
+{
+    match node {
+        crate::ExprFragmentKind::Expr(_binding_0) => {
+            crate::ExprFragmentKind::Expr(f.fold_fragment_expr(_binding_0))
+        }
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
@@ -2160,6 +2205,15 @@ where
         ident: f.fold_ident(node.ident),
         generics: f.fold_generics(node.generics),
         semi_token: node.semi_token,
+    }
+}
+pub fn fold_fragment_expr<F>(f: &mut F, node: crate::FragmentExpr) -> crate::FragmentExpr
+where
+    F: Fold + ?Sized,
+{
+    crate::FragmentExpr {
+        span: f.fold_span(node.span),
+        payload: node.payload,
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
